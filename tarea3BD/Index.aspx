@@ -30,7 +30,7 @@
     <div class="d-flex justify-content-center">
         <asp:Button class="btn btn-nvar me-2" ID="btnFacPen" runat="server" Text="Facturas Pendientes"></asp:Button>
         <asp:Button class="btn btn-nvar me-2" ID="btnFacPag" runat="server" Text="Facturas Pagadas"></asp:Button>
-        <asp:Button class="btn btn-nvar me-2" ID="btnPagFac" runat="server" Text="Pagar Facturas"></asp:Button>
+        <asp:Button class="btn btn-nvar me-2" ID="btnPagFac" runat="server" Text="Pagar Facturas" OnClick="btnPagFac_Click"></asp:Button>
 
         <br>
     </div>

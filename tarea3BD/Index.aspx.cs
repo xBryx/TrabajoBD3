@@ -12,10 +12,8 @@ namespace tarea3BD
         Usuario usuiario;
         protected void Page_Load(object sender, EventArgs e)
         {
-            String token = Request.QueryString["token"];
-            if (!String.IsNullOrEmpty(token))
-            {
-                var datos = Cache[token];
+
+                var datos = Cache["datosUsuario"];
                 if (datos != null)
                 {
                     dynamic usuario = datos;
@@ -25,7 +23,7 @@ namespace tarea3BD
                 cambioEstadoBtn(false);
                 listaFacturas.Enabled = false;
                 btnPag.Enabled = false;
-            }
+            
         }
 
         protected void propiedadesGVRowCommand(object sender, GridViewCommandEventArgs e)
@@ -40,7 +38,7 @@ namespace tarea3BD
 
                 string numPropiedad = row.Cells[0].Text;
                 string nombrePropietario = row.Cells[1].Text;
-
+                Cache.Insert("numPropiedadSeleccionada", numPropiedad, null, DateTime.Now.AddMinutes(28), TimeSpan.Zero);
                 //Verificar que funciona
                 Response.Write($"Clic en '{numPropiedad}' (nombre: {nombrePropietario})");
 
@@ -91,6 +89,8 @@ namespace tarea3BD
         {
             listaFacturas.Enabled = true;
             btnPag.Enabled = true;
+            var datos = Cache["numPropiedadSeleccionada"];
+            Response.Write($"Propiedad seleccionada: {datos}");
         }
     }
 }

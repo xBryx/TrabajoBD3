@@ -29,9 +29,9 @@ namespace tarea3BD
 
             //Crear token
             string token = Guid.NewGuid().ToString();         
-            Cache.Insert(token, usuario, null, DateTime.Now.AddMinutes(28), TimeSpan.Zero);
+            Cache.Insert("datosUsuario", usuario, null, DateTime.Now.AddMinutes(28), TimeSpan.Zero);
             
-            Response.Redirect("Index.aspx?token=" + token);
+            Response.Redirect("Index.aspx");
 
         }
     }

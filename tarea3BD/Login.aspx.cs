@@ -38,15 +38,15 @@ namespace tarea3BD
             cmd.Parameters.AddWithValue("@inUsername", username);
             cmd.Parameters.AddWithValue("@inPassword", password);
             //Parametro de retorno
-            SqlParameter returnParam = cmd.Parameters.Add("@ReturnValue", SqlDbType.Int);
+            SqlParameter returnParam = new SqlParameter();
             returnParam.Direction = ParameterDirection.ReturnValue;
             cmd.Parameters.Add(returnParam);            
 
             SqlDataReader reader = cmd.ExecuteReader();
-            int result = (int)returnParam.Value;
-            //Leer datos del store procedure
-            if (!(reader.Read()) && (result == 0))
-            {
+            //int result = (int)returnParam.Value;
+            //Leer datos del store procedure            
+            if (!reader.Read())
+            { //Si no hay mensaje de error
                 var usuario = new
                 {
                     Nombre = username,
@@ -73,12 +73,12 @@ namespace tarea3BD
         //Escribe en el div Info el motivo del error
         public bool validarDatosUsuario(String username, String UsuarioPassword)
         {
-            if (!Regex.IsMatch(username, "@\"^[A-Za-z]+$\""))
+            if (!Regex.IsMatch(username, "^[A-Za-z]+$"))
             {
                 divInfoLogin.InnerText = "Solo letras en nombre de usuario";
                 return false;
             }
-            if (!Regex.IsMatch(username, "@\"^[0-9]+$\""))
+            if (!Regex.IsMatch(UsuarioPassword, "^[0-9]+$"))
             {
                 divInfoLogin.InnerText = "Solo inserte números en su contraseña";
                 return false;

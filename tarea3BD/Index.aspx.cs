@@ -21,8 +21,6 @@ namespace tarea3BD
                 }
                 cargarDatosPropiedadesGV();
                 cambioEstadoBtn(false);
-                listaFacturas.Enabled = false;
-                btnPag.Enabled = false;
             
         }
 
@@ -87,10 +85,14 @@ namespace tarea3BD
 
         protected void btnPagFac_Click(object sender, EventArgs e)
         {
-            listaFacturas.Enabled = true;
-            btnPag.Enabled = true;
+
             var datos = Cache["numPropiedadSeleccionada"];
             Response.Write($"Propiedad seleccionada: {datos}");
+        }
+
+        protected void btnBusqueda_Click(object sender, EventArgs e)
+        {
+            divInfoBusqueda.InnerText = "Busqueda div";
         }
     }
 }

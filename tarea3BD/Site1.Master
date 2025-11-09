@@ -38,8 +38,8 @@
 
 
                     <!-- Botones -->
-                    <asp:Button class="btn btn-nvar me-2" ID="btnIndex" runat="server" Text="Gestión Facturas Propiedades" ></asp:Button>                    
-                    <asp:Button class="btn btn-nvar me-2" ID="btnLogout" runat="server" Text="Cerrar Sesión"></asp:Button>
+                    <asp:Button class="btn btn-nvar me-2" ID="btnIndex" runat="server" Text="Gestión Facturas Propiedades" OnClick="btnIndex_Click" ></asp:Button>                    
+                    <asp:Button class="btn btn-nvar me-2" ID="btnLogout" runat="server" Text="Cerrar Sesión" OnClick="btnLogout_Click"></asp:Button>
 
 
 

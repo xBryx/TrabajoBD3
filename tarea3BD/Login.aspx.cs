@@ -60,6 +60,7 @@ namespace tarea3BD
             }
             else
             {
+
                divInfoLogin.InnerText = (reader["Descripcion"]).ToString();
                 
             }

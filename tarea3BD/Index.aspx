@@ -2,10 +2,10 @@
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
     <!--Parte de busqueda-->
     <div class="d-flex justify-content-center">
-       <input id="inputBusqueda" type="text" placeholder="Inserte el valor a buscar" style="width: 300px;"/>
-       <select>
+       <input id="inputBusqueda" type="text" placeholder="Inserte el valor a buscar" style="width: 300px;" runat="server"/>
+       <select id="selectBusqueda" runat="server">
            <option value="0" selected>Elija un tipo de búsqueda</option>
-           <option value="0">Nombre</option>
+           <option value="0">Identifiación de propietario</option>
            <option value="1">Número de propiedad</option>
        </select>
        <asp:Button class="btn btn-nvar me-2" ID="btnBusqueda" runat="server" Text="Buscar" OnClick="btnBusqueda_Click"></asp:Button>    

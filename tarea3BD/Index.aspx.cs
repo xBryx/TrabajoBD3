@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -9,17 +12,20 @@ namespace tarea3BD
 {
     public partial class Index : System.Web.UI.Page
     {
+        SqlConnection conexion;
         Usuario usuiario;
         protected void Page_Load(object sender, EventArgs e)
         {
+            String sConexion = System.Configuration.ConfigurationManager.ConnectionStrings["cadenaconexion"].ConnectionString;
+            conexion = new SqlConnection(sConexion);
 
-                var datos = Cache["datosUsuario"];
+            var datos = Cache["datosUsuario"];
                 if (datos != null)
                 {
                     dynamic usuario = datos;
                     Response.Write($"Usuario: {usuario.Nombre}, IP: {usuario.IP}");
                 }
-                cargarDatosPropiedadesGV();
+                //cargarDatosPropiedadesGV();
                 cambioEstadoBtn(false);
             
         }
@@ -92,7 +98,63 @@ namespace tarea3BD
 
         protected void btnBusqueda_Click(object sender, EventArgs e)
         {
-            divInfoBusqueda.InnerText = "Busqueda div";
+            //Validaciones
+            if(inputBusqueda.Value == "")
+            {
+                divInfoBusqueda.InnerText = "Inserte el valor a buscar";
+                return;
+            } if (!Regex.IsMatch(inputBusqueda.Value, "^[0-9]+$")){
+                divInfoBusqueda.InnerText = "Solo ingrese números";
+                return;
+            }            
+            //Redirigir al tipo de búsqueda
+            if (selectBusqueda.Value == "0") {
+                //SP
+                SqlCommand cmd = new SqlCommand("sp_Busqueda_ValorIdentidad_Propiedad", conexion);
+                cmd.CommandType = CommandType.StoredProcedure;
+                //Parametros de entrada SP
+                cmd.Parameters.AddWithValue("@inValorIdentidad", inputBusqueda.Value);
+                //Parametros de salida
+                SqlParameter outMsj = new SqlParameter("@outmsj", SqlDbType.NVarChar, 100)
+                { Direction = ParameterDirection.Output };
+                cmd.Parameters.Add(outMsj);
+                //Parametro de retorno
+                SqlParameter returnParam = new SqlParameter();
+                returnParam.Direction = ParameterDirection.ReturnValue;
+                cmd.Parameters.Add(returnParam);
+                //Poner información en GV
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                propiedadesGV.DataSource = dt;
+                propiedadesGV.DataBind();
+                //Mostrar podible error
+                divInfoBusqueda.InnerText = outMsj.Value.ToString();
+            }
+            else
+            {
+                //SP
+                SqlCommand cmd = new SqlCommand("sp_Busqueda_NumPropiedad_Propiedad", conexion);
+                cmd.CommandType = CommandType.StoredProcedure;
+                //Parametros de entrada SP
+                cmd.Parameters.AddWithValue("@inNumPropiedad", int.Parse(inputBusqueda.Value));
+                //Parametros de salida
+                SqlParameter outMsj = new SqlParameter("@outmsj", SqlDbType.NVarChar, 100)
+                { Direction = ParameterDirection.Output };
+                cmd.Parameters.Add(outMsj);
+                //Parametro de retorno
+                SqlParameter returnParam = new SqlParameter();
+                returnParam.Direction = ParameterDirection.ReturnValue;
+                cmd.Parameters.Add(returnParam);
+                //Poner información en GV
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                propiedadesGV.DataSource = dt;
+                propiedadesGV.DataBind();
+                //Mostrar podible error
+                divInfoBusqueda.InnerText = outMsj.Value.ToString();
+            }            
         }
     }
 }

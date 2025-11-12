@@ -24,16 +24,19 @@ namespace tarea3BD
                 {
                     dynamic usuario = datos;
                     Response.Write($"Usuario: {usuario.Nombre}, IP: {usuario.IP}");
-                }
+                }            
                 //cargarDatosPropiedadesGV();
                 cambioEstadoBtn(false);
             
         }
 
+
+        //Funcion que es ejecutada al presionar boton de seleccionar en el grid view
         protected void propiedadesGVRowCommand(object sender, GridViewCommandEventArgs e)
         {
             if (e.CommandName == "Ver")
             {
+                //Mostrar botones de pagar y facturas
                 cambioEstadoBtn(true);
                 //indice de la fila
                 int index = Convert.ToInt32(e.CommandArgument);
@@ -82,6 +85,8 @@ namespace tarea3BD
             propiedadesGV.DataBind();
         }
 
+
+        //Enseña o esconde los elementos en la funcion segun el parametro de entrada
         public void cambioEstadoBtn(bool estado)
         {
             btnFacPag.Enabled = estado;
@@ -96,6 +101,9 @@ namespace tarea3BD
             Response.Write($"Propiedad seleccionada: {datos}");
         }
 
+        
+        /*Ejecuta un sp que busca la información de una propiedad a partir
+          de la identificación o un número de propiedad */
         protected void btnBusqueda_Click(object sender, EventArgs e)
         {
             //Validaciones
@@ -155,6 +163,11 @@ namespace tarea3BD
                 //Mostrar podible error
                 divInfoBusqueda.InnerText = outMsj.Value.ToString();
             }            
+        }
+
+        protected void btnFacPen_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("FacturasPendientes.aspx");
         }
     }
 }

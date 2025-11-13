@@ -1,0 +1,116 @@
+USE Tarea3
+
+GO
+
+CREATE TABLE TipoUso 
+(
+    IdTipoUso INT PRIMARY KEY,
+    Nombre NVARCHAR(100)
+);
+
+CREATE TABLE TipoLocalizacion (
+    IdTipoLocalizacion INT PRIMARY KEY,
+    Nombre NVARCHAR(100)
+);
+CREATE TABLE TipoAsociacion(
+	Id INT NOT NULL PRIMARY KEY,
+	Nombre NVARCHAR(64) NOT NULL
+);
+CREATE TABLE TipoUsuario(
+	Id INT NOT NULL PRIMARY KEY,
+	Nombre NVARCHAR(32) NOT NULL
+	);
+CREATE TABLE TipoMedioPago (
+    Id INT PRIMARY KEY,
+    Nombre NVARCHAR(100) NOT NULL
+);
+CREATE TABLE TipoMontoCC(
+	id INT PRIMARY KEY,
+	Nombre NVARCHAR(32)
+);
+
+CREATE TABLE PeriodoMontoCC(
+	id INT PRIMARY KEY,
+	Nombre NVARCHAR(32),
+	QMeses INT NOT NULL,
+	Dias INT NULL DEFAULT 0
+);
+CREATE TABLE TipoMovimientoLecturaMedidor(
+	id INT PRIMARY KEY,
+	Nombre NVARCHAR(32)
+);
+
+CREATE TABLE Propiedad (
+	id INT primary key,
+    NumeroFinca        NVARCHAR(20),
+    ValorFiscal        DECIMAL(18,2) NOT NULL,
+    SaldoM3            INT NOT NULL DEFAULT 0,
+    FechaRegistro      DATE NOT NULL,
+    TipoUsoId          INT NOT NULL ,
+    TipoLocalizacionId INT NOT NULL,
+
+	 CONSTRAINT FK_PTipoUso
+        FOREIGN KEY (TipoUsoId) 
+        REFERENCES TipoUso(IdTipoUso),
+
+    CONSTRAINT FK_PTipoLocalizacion
+        FOREIGN KEY (TipoLocalizacionId)
+        REFERENCES TipoLocalizacion(IdTipoLocalizacion)
+);
+CREATE TABLE Propietario(
+	Id INT NOT NULL PRIMARY KEY,
+	Nombre NVARCHAR(128) NOT NULL,
+	ValorDocumentoIdentidad NVARCHAR(20) NOT NULL,
+	Email NVARCHAR(20) NOT NULL,
+	Telefono NVARCHAR(20) NOT NULL,
+);
+CREATE TABLE PropietarioPropiedad (
+    Id INT IDENTITY PRIMARY KEY,
+    valorDocumento NVARCHAR(20) NOT NULL,
+    NumeroFinca NVARCHAR(20) NOT NULL,
+    IdTipoAsociacion INT NOT NULL,
+    FechaInicio DATE NOT NULL,
+    FechaFin DATE NULL,
+
+	CONSTRAINT FK_PXP_Propietario
+        FOREIGN KEY (valorDocumento)
+        REFERENCES Propietario(ValorDocumentoIdentidad),
+
+    CONSTRAINT FK_PXP_Propiedad
+        FOREIGN KEY (NumeroFinca)
+        REFERENCES Propiedad(NumeroFinca),
+
+    CONSTRAINT FK_PXP_TipoAsociacion
+        FOREIGN KEY (IdTipoAsociacion)
+        REFERENCES TipoAsociacion(Id)
+);
+CREATE TABLE Comprobante(
+	id INT PRIMARY KEY,
+	Fecha DATE NOT NULL,
+	Codigo NVARCHAR(20)
+	);
+
+CREATE TABLE CC(
+	id INT PRIMARY KEY,
+	Nombre NVARCHAR(128) NOT NULL,
+	QDividir NVARCHAR(64)
+);
+
+CREATE TABLE Facturas(
+	Id INT PRIMARY KEY,
+	IdCC INT NOT NULL
+	idNumeroFinca NVARCHAR(20) NOT NULL,
+	FechaFactura DATE,
+	FechaLimite  DATE,
+	FechaCortaAgua DATE,
+	ToTPagarOringinal Money,
+	ToTPagarFinal Money,
+	Estatus int
+
+	CONSTRAINT FK_PXFACTURAS
+        FOREIGN KEY (idNumeroFinca)
+        REFERENCES Propiedad(NumeroFinca),
+	CONSTRAINT FK_PXCC
+        FOREIGN KEY (IdCC)
+        REFERENCES CC(Id),
+);

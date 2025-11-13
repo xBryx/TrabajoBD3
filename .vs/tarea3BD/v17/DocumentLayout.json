@@ -68,7 +68,8 @@
               "RelativeToolTip": "tarea3BD\\Index.aspx",
               "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
-              "WhenOpened": "2025-11-02T06:16:34.213Z"
+              "WhenOpened": "2025-11-02T06:16:34.213Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -92,7 +93,8 @@
               "RelativeToolTip": "tarea3BD\\FacturasPendientes.aspx",
               "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
-              "WhenOpened": "2025-11-12T03:20:23.217Z"
+              "WhenOpened": "2025-11-12T03:20:23.217Z",
+              "EditorCaption": ""
             }
           ]
         }

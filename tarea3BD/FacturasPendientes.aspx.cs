@@ -23,7 +23,7 @@ namespace tarea3BD
             SqlCommand cmd = new SqlCommand("sp_Factura_Pendiente_Propiedad", conexion);
             cmd.CommandType = CommandType.StoredProcedure;
             //Parametros de entrada SP
-            cmd.Parameters.AddWithValue("@inNumFinca", int.Parse( (string)datos));
+            cmd.Parameters.AddWithValue("@inNumFinca", datos);
             
             //Poner información en GV
             SqlDataAdapter da = new SqlDataAdapter(cmd);

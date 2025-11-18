@@ -11,7 +11,8 @@
         AutoGenerateColumns="False">
         <Columns>
             <asp:BoundField DataField="ConceptoFactura" HeaderText="Concepto Factura" />
-            <asp:BoundField DataField="Fecha" HeaderText="Fecha Facturación" />    
+            <asp:BoundField DataField="Fecha" HeaderText="Fecha Facturación" /> 
+            <asp:BoundField DataField="FechaVencimiento" HeaderText="Fecha Vencimiento" /> 
             <asp:BoundField DataField="TotalInicial" HeaderText="Total (Sin intereses)" /> 
             <asp:BoundField DataField="TotalFinal" HeaderText="Total (Con intereses)" /> 
         </Columns>

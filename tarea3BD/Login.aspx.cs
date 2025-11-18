@@ -79,11 +79,7 @@ namespace tarea3BD
                 divInfoLogin.InnerText = "Solo letras en nombre de usuario";
                 return false;
             }
-            if (!Regex.IsMatch(UsuarioPassword, "^[0-9]+$"))
-            {
-                divInfoLogin.InnerText = "Solo inserte números en su contraseña";
-                return false;
-            }
+            
             return true;
 
         }   

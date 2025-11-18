@@ -111,10 +111,7 @@ namespace tarea3BD
             {
                 divInfoBusqueda.InnerText = "Inserte el valor a buscar";
                 return;
-            } if (!Regex.IsMatch(inputBusqueda.Value, "^[0-9]+$")){
-                divInfoBusqueda.InnerText = "Solo ingrese números";
-                return;
-            }            
+            }        
             //Redirigir al tipo de búsqueda
             if (selectBusqueda.Value == "0") {
                 //SP
@@ -145,7 +142,7 @@ namespace tarea3BD
                 SqlCommand cmd = new SqlCommand("sp_Busqueda_NumPropiedad_Propiedad", conexion);
                 cmd.CommandType = CommandType.StoredProcedure;
                 //Parametros de entrada SP
-                cmd.Parameters.AddWithValue("@inNumPropiedad", int.Parse(inputBusqueda.Value));
+                cmd.Parameters.AddWithValue("@inNumPropiedad", inputBusqueda.Value);
                 //Parametros de salida
                 SqlParameter outMsj = new SqlParameter("@outmsj", SqlDbType.NVarChar, 100)
                 { Direction = ParameterDirection.Output };

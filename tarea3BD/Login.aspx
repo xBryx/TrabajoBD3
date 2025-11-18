@@ -12,7 +12,11 @@
 <body>
 
     <form id="form1" runat="server">
+         <div runat="server" class="d-flex justify-content-center alert alert-info" id="divInfoLogin">
+             </div>
         <div class="d-flex justify-content-center align-items-center vh-100 bg-light">
+                      
+            
             <div class="p-4 border rounded bg-white shadow" style="width: 380px;">
                 <h4 class="text-center mb-4">Iniciar sesión</h4>
 

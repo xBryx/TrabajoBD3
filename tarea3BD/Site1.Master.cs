@@ -18,5 +18,17 @@ namespace tarea3BD
         {
 
         }
+
+        protected void btnIndex_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        protected void btnLogout_Click(object sender, EventArgs e)
+        {
+            Cache.Remove("datosUsuario");
+            Cache.Remove("numPropiedadSeleccionada");
+            Response.Redirect("Login.aspx");
+        }
     }
 }

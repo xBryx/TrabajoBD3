@@ -99,6 +99,7 @@ namespace tarea3BD
 
             var datos = Cache["numPropiedadSeleccionada"];
             Response.Write($"Propiedad seleccionada: {datos}");
+            Response.Redirect("Pagar.aspx");
         }
 
         

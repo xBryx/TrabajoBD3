@@ -25,4 +25,23 @@
         <asp:Button class="btn btn-nvar me-2" ID="btnVolver" runat="server" Text="Volver" OnClick="btnVolver_Click"></asp:Button>
     </div>
 
+
+    <!-- Modal de confirmación -->
+    <div class="modal fade" id="modalPagoHecho" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Pago realizado</h5>
+                </div>
+                <div class="modal-body">
+                    <asp:Label ID="lblMensajePago" runat="server" Text=""></asp:Label>
+                </div>
+                <div class="modal-footer">                    
+                    <asp:Button ID="btnCerrarModal" runat="server" class="btn btn-secondary" data-bs-dismiss="modal" Text="Cerrar" OnClick="btnCerrarModal_Click" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 </asp:Content>

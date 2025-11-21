@@ -3,19 +3,15 @@
   "WorkspaceRootPath": "D:\\TEC\\6 Semestre\\BD I\\Proyecto3\\Web3BD\\tarea3BD\\TrabajoBD3\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{AB086B9F-FEF8-4BDF-BCED-F62551F00A70}|tarea3BD\\tarea3BD.csproj|d:\\tec\\6 semestre\\bd i\\proyecto3\\web3bd\\tarea3bd\\trabajobd3\\tarea3bd\\site1.master.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AB086B9F-FEF8-4BDF-BCED-F62551F00A70}|tarea3BD\\tarea3BD.csproj|solutionrelative:tarea3bd\\site1.master.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{AB086B9F-FEF8-4BDF-BCED-F62551F00A70}|tarea3BD\\tarea3BD.csproj|D:\\TEC\\6 Semestre\\BD I\\Proyecto3\\Web3BD\\tarea3BD\\TrabajoBD3\\tarea3bd\\pagar.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
       "RelativeMoniker": "D:0:0:{AB086B9F-FEF8-4BDF-BCED-F62551F00A70}|tarea3BD\\tarea3BD.csproj|solutionrelative:tarea3bd\\pagar.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{AB086B9F-FEF8-4BDF-BCED-F62551F00A70}|tarea3BD\\tarea3BD.csproj|d:\\tec\\6 semestre\\bd i\\proyecto3\\web3bd\\tarea3bd\\trabajobd3\\tarea3bd\\pagar.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AB086B9F-FEF8-4BDF-BCED-F62551F00A70}|tarea3BD\\tarea3BD.csproj|solutionrelative:tarea3bd\\pagar.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{AB086B9F-FEF8-4BDF-BCED-F62551F00A70}|tarea3BD\\tarea3BD.csproj|d:\\tec\\6 semestre\\bd i\\proyecto3\\web3bd\\tarea3bd\\trabajobd3\\tarea3bd\\site1.master.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AB086B9F-FEF8-4BDF-BCED-F62551F00A70}|tarea3BD\\tarea3BD.csproj|solutionrelative:tarea3bd\\site1.master.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{AB086B9F-FEF8-4BDF-BCED-F62551F00A70}|tarea3BD\\tarea3BD.csproj|d:\\tec\\6 semestre\\bd i\\proyecto3\\web3bd\\tarea3bd\\trabajobd3\\tarea3bd\\index.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{AB086B9F-FEF8-4BDF-BCED-F62551F00A70}|tarea3BD\\tarea3BD.csproj|D:\\TEC\\6 Semestre\\BD I\\Proyecto3\\Web3BD\\tarea3BD\\TrabajoBD3\\tarea3bd\\index.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{AB086B9F-FEF8-4BDF-BCED-F62551F00A70}|tarea3BD\\tarea3BD.csproj|solutionrelative:tarea3bd\\index.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -26,11 +22,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "Site1.Master.cs",
               "DocumentMoniker": "D:\\TEC\\6 Semestre\\BD I\\Proyecto3\\Web3BD\\tarea3BD\\TrabajoBD3\\tarea3BD\\Site1.Master.cs",
               "RelativeDocumentMoniker": "tarea3BD\\Site1.Master.cs",
@@ -44,7 +40,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 2,
               "Title": "Index.aspx.cs",
               "DocumentMoniker": "D:\\TEC\\6 Semestre\\BD I\\Proyecto3\\Web3BD\\tarea3BD\\TrabajoBD3\\tarea3BD\\Index.aspx.cs",
               "RelativeDocumentMoniker": "tarea3BD\\Index.aspx.cs",
@@ -52,25 +48,11 @@
               "RelativeToolTip": "tarea3BD\\Index.aspx.cs",
               "ViewState": "AgIAAIsAAAAAAAAAAAAmwGUAAAAsAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-19T23:22:56.703Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-19T23:22:56.703Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Pagar.aspx.cs",
-              "DocumentMoniker": "D:\\TEC\\6 Semestre\\BD I\\Proyecto3\\Web3BD\\tarea3BD\\TrabajoBD3\\tarea3BD\\Pagar.aspx.cs",
-              "RelativeDocumentMoniker": "tarea3BD\\Pagar.aspx.cs",
-              "ToolTip": "D:\\TEC\\6 Semestre\\BD I\\Proyecto3\\Web3BD\\tarea3BD\\TrabajoBD3\\tarea3BD\\Pagar.aspx.cs",
-              "RelativeToolTip": "tarea3BD\\Pagar.aspx.cs",
-              "ViewState": "AgIAAEwAAAAAAAAAAAAQwF4AAAAIAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-19T23:01:01.656Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "Pagar.aspx",
               "DocumentMoniker": "D:\\TEC\\6 Semestre\\BD I\\Proyecto3\\Web3BD\\tarea3BD\\TrabajoBD3\\tarea3BD\\Pagar.aspx",
               "RelativeDocumentMoniker": "tarea3BD\\Pagar.aspx",

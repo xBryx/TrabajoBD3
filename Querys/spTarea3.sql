@@ -457,6 +457,91 @@ BEGIN
 END
 GO
 
+	GO
+CREATE PROCEDURE dbo.InsertarLectura
+(
+      @inNumeroFinca       NVARCHAR(20)
+    , @inIdTipoMovimiento  INT
+    , @inValor             DECIMAL(18,2)
+    , @outResultCode       INT OUTPUT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @outResultCode = 1; -- éxito por defecto
+
+    BEGIN TRY
+
+
+        DECLARE @IdPropiedad INT;
+
+        SELECT @IdPropiedad = p.Id
+        FROM dbo.Propiedad AS p
+        WHERE p.NumeroFinca = @inNumeroFinca;
+
+        IF (@IdPropiedad IS NULL)
+        BEGIN
+            SET @outResultCode = -2; -- Propiedad no existe
+            RETURN;
+        END
+
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM dbo.TipoMovimientoLecturaMedidor AS tm
+            WHERE tm.Id = @inIdTipoMovimiento
+        )
+        BEGIN
+            SET @outResultCode = -3; -- Tipo movimiento no existe
+            RETURN;
+        END
+
+        IF (@inIdTipoMovimiento = 1)
+        BEGIN
+            DECLARE @UltimaLectura DECIMAL(18,2);
+
+            SELECT TOP 1 @UltimaLectura = lm.Valor
+            FROM dbo.LecturasMedidor AS lm
+            WHERE lm.IdPropiedad = @IdPropiedad
+            ORDER BY lm.Id DESC;
+
+            IF (@UltimaLectura IS NOT NULL AND @inValor < @UltimaLectura)
+            BEGIN
+                SET @outResultCode = -4; -- Lectura regresiva
+                RETURN;
+            END
+        END
+
+        ---------------------------------------------------------
+        BEGIN TRAN
+
+            INSERT INTO dbo.LecturasMedidor
+            (
+                  IdPropiedad
+                , IdTipoMovimiento
+                , Valor
+            )
+            VALUES
+            (
+                  @IdPropiedad
+                , @inIdTipoMovimiento
+                , @inValor
+            );
+
+        COMMIT;
+
+    END TRY
+    BEGIN CATCH
+
+        IF @@TRANCOUNT > 0
+            ROLLBACK;
+
+        SET @outResultCode = -1; -- Error general
+        RETURN;
+
+    END CATCH
+END;
+GO
 --Datos de prueba
 INSERT INTO dbo.TipoUsuario(Id, Nombre)
 	VALUES (1, 'Admin')

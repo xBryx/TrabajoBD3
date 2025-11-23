@@ -48,6 +48,7 @@ CREATE TABLE Propiedad (
     FechaRegistro      DATE NOT NULL,
     TipoUsoId          INT NOT NULL ,
     TipoLocalizacionId INT NOT NULL,
+	MetrosCuadrados    INT,
 	NumeroMedidor	   NVARCHAR(20),
 
 	 CONSTRAINT FK_PTipoUso
@@ -58,6 +59,8 @@ CREATE TABLE Propiedad (
         FOREIGN KEY (TipoLocalizacionId)
         REFERENCES TipoLocalizacion(IdTipoLocalizacion)
 );
+
+
 CREATE TABLE Propietario(
 	Id INT IDENTITY(1,1) PRIMARY KEY,
 	Nombre NVARCHAR(128) NOT NULL,
@@ -129,6 +132,21 @@ CREATE TABLE Facturas(
         REFERENCES Propiedad(Id),
 	
 );
+CREATE TABLE FacturaLinea (
+    Id INT PRIMARY KEY,
+    IdFactura INT NOT NULL,
+    IdCC INT NOT NULL,
+    Monto MONEY NOT NULL,
+    Detalle NVARCHAR(200) NULL,
+
+    CONSTRAINT FK_Linea_Factura
+        FOREIGN KEY (IdFactura)
+        REFERENCES Facturas(Id),
+
+    CONSTRAINT FK_Linea_CC
+        FOREIGN KEY (IdCC)
+        REFERENCES CC(Id)
+);
 
 CREATE TABLE Usuario(
 	Id INT IDENTITY(1,1) PRIMARY KEY ,
@@ -191,4 +209,6 @@ CREATE TABLE LecturasMedidor(
 		FOREIGN KEY (IdTipoMovimiento)
 		REFERENCES TipoMovimientoLecturaMedidor(Id)
 );
+
+
 

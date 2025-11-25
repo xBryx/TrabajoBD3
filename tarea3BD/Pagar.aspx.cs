@@ -30,6 +30,7 @@ namespace tarea3BD
             DataTable dt = crearDTCobros(cmd);
             pagosGV.DataSource = dt;
             pagosGV.DataBind();
+
         }
 
         //Crea un DataTable para mostrar en la interfaz.

@@ -194,12 +194,13 @@ ALTER PROCEDURE dbo.SP_Asociar
 	@FechaOperacion DATE,
 	@valorDocumento NVARCHAR(20),
 	@numeroFinca NVARCHAR(20),
-	@tipoAsociacion INT
+	@tipoAsociacion INT,
+	@CodigoResultado int output
 )
 AS
 BEGIN
 	SET NOCOUNT ON 
-	DECLARE @CodigoResultado INT;
+
 	SET @CodigoResultado=1;
 	DECLARE @Inicio DATE;
 	SET @INICIO= @FechaOperacion;
@@ -686,11 +687,12 @@ END;
 
 GO
 ALTER PROCEDURE dbo.sp_Pagar
-    @inIdFactura INT,
     @inNumFinca NVARCHAR(20),
+	@inIdTipoMedioPago int,
     @FechaOperacion DATE   -- NUEVO
 AS
 DECLARE   @idPropiedad INT,
+		  @inIdFactura int,
           @numReferencia NVARCHAR(20),
           @montoPago MONEY = 0,
           @fechaLimite DATE,
@@ -701,6 +703,10 @@ BEGIN
         SELECT @idPropiedad = p.id
         FROM dbo.Propiedad p
         WHERE p.NumeroFinca = @inNumFinca;
+
+		SELECT @inIdFactura=F.id
+		FROM dbo.Facturas F
+		WHERE F.IdPropiedad=@idPropiedad;
 
         SELECT @fechaLimite = f.FechaLimite
         FROM dbo.Facturas f
@@ -770,7 +776,7 @@ BEGIN
         VALUES
         (
             @idPropiedad,
-            1,
+            @inIdTipoMedioPago,
             @numReferencia
         );
 
@@ -859,9 +865,9 @@ GO
 
 
 GO
-CREATE PROCEDURE dbo.InsertarLectura
+Alter PROCEDURE dbo.InsertarLectura
 (
-     @inNumeroFinca       NVARCHAR(20)
+     @numeroMedidor       NVARCHAR(20)
     , @inIdTipoMovimiento  INT
     , @inValor             DECIMAL(18,2)
     , @outResultCode       INT OUTPUT
@@ -878,7 +884,7 @@ BEGIN
 
         SELECT @IdPropiedad = p.Id
         FROM dbo.Propiedad AS p
-        WHERE p.NumeroFinca = @inNumeroFinca;
+        WHERE p.NumeroMedidor = @numeroMedidor;
 
         IF (@IdPropiedad IS NULL)
         BEGIN
@@ -943,4 +949,5 @@ BEGIN
     END CATCH
 END;
 GO
+
 

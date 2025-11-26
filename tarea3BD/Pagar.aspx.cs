@@ -68,6 +68,7 @@ namespace tarea3BD
                 //Parametros de entrada SP
                 cmd.Parameters.AddWithValue("@inNumFinca", datos);
                 cmd.Parameters.AddWithValue("@inIdFactura", idFacturaPagar);
+                cmd.Parameters.AddWithValue("@FechaOperacion", DateTime.Today);
                 SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {

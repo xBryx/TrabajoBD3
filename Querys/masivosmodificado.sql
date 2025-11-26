@@ -138,7 +138,7 @@ BEGIN TRY
 										  , 30
 										  , 31))
 		END
-	ELSE IF (@Hoy = 29 --Febrero en a�o bisiesto
+	ELSE IF (@Hoy = 29 --Febrero en año bisiesto
 		AND @Hoy = @ultimoDiaMes) 
 		BEGIN
 		INSERT INTO @PropiedadesFacturan(idPropiedad)

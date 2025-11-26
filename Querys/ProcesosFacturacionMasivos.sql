@@ -263,6 +263,7 @@ AS
 BEGIN 
 	DECLARE @lo INT = 1
 			, @hi INT
+			, @idFactura INT
 BEGIN TRY
 	IF EXISTS (SELECT 1 FROM dbo.EventSP EL --Validar el proceso no ha corrido
 						WHERE (EL.TipoEvento = 2)
@@ -293,14 +294,28 @@ BEGIN TRY
 	
 	WHILE @lo <= @hi
 		BEGIN
-
-			BEGIN TRANSACTION 
-				INSERT INTO dbo.CorteAgua(	Estado
-											, FacturaId)
-				SELECT  pca.Estado
-						, pca.IdFactura
+		SELECT @idFactura = pca.IdFactura
 				FROM @PropiedadCorteAgua pca
 				WHERE pca.SEC = @lo
+			BEGIN TRANSACTION 
+				INSERT INTO dbo.CorteAgua(	Estado
+											, FacturaId)				
+					VALUES (1
+							, @idFactura)
+
+				INSERT INTO dbo.FacturaLinea (IdFactura
+											  , IdCC
+											  , Monto
+											  , Detalle)
+
+				VALUES (@idFactura
+						, 6
+						, 30000.00
+						, 'ReconexionAgua' )
+				UPDATE f
+				SET f.ToTPagarFinal = f.ToTPagarOringinal + 30000.00
+				FROM dbo.Facturas f
+				WHERE f.Id = @idFactura
 			COMMIT
 
 		SET @lo = @lo + 1
@@ -322,6 +337,64 @@ BEGIN CATCH
 	VALUES( GETDATE()
 			, 2 --Falló
 			, 2
+			)
+END CATCH
+END
+
+
+CREATE TABLE dbo.ReconexionAgua(
+	id INT IDENTITY(1,1) PRIMARY KEY
+	, IdCorteAgua INT NOT NULL
+
+	CONSTRAINT FK_Corta_Agua
+        FOREIGN KEY (IdCorteAgua) 
+        REFERENCES dbo.CorteAgua(id)
+	);
+
+
+GO
+CREATE PROCEDURE dbo.sp_ReconexionAgua
+	@outResult INT OUTPUT
+AS
+BEGIN			
+BEGIN TRY
+	IF EXISTS (SELECT 1 FROM dbo.EventSP EL --Validar el proceso no ha corrido
+						WHERE (EL.TipoEvento = 3)
+						AND (CAST(EL.FechaOperacion AS DATE) = CAST(GETDATE() AS DATE))
+						AND (EL.Exitoso = 1))
+		BEGIN
+			SET @outResult = 50201 --Proceso ya se corrió correctamente en el día
+			RETURN;
+		END
+
+	    BEGIN TRANSACTION
+
+        INSERT INTO dbo.ReconexionAgua (IdCorteAgua)
+        SELECT ca.Id
+        FROM dbo.CorteAgua ca
+        WHERE ca.Estado = 2  -- Corte agua pagado
+        AND NOT EXISTS ( SELECT 1 FROM dbo.ReconexionAgua ra --No existe orden de reconexion con el id de ese corte de agua
+                         WHERE ra.IdCorteAgua = ca.Id )
+
+    COMMIT TRANSACTION
+	
+	INSERT INTO dbo.EventSP(FechaOperacion, Exitoso, TipoEvento)
+	VALUES( GETDATE()
+			, 1
+			, 3
+			)
+	SET @outResult = 200;
+
+END TRY
+BEGIN CATCH
+	IF (@@TRANCOUNT > 0)
+		BEGIN 
+		ROLLBACK TRANSACTION 
+		END;
+	INSERT INTO dbo.EventSP(FechaOperacion, Exitoso, TipoEvento)
+	VALUES( GETDATE()
+			, 2 --Falló
+			, 3
 			)
 END CATCH
 END

@@ -114,18 +114,19 @@ BEGIN TRY
 				SEC INT IDENTITY(1,1)
 				, idPropiedad INT);			
 
-	IF EXISTS (
+	IF EXISTS 
+	(
     SELECT 1 
     FROM dbo.EventSP EL
     WHERE (EL.TipoEvento = 1)
       AND (CAST(EL.FechaOperacion AS DATE) = CAST(@FechaOperacion AS DATE))
       AND (EL.Exitoso = 1)
-		)
+	)
 
-		BEGIN
-			SET @outResult = 50201 --Proceso ya se corri� correctamente en el d�a
-			RETURN;
-		END
+	BEGIN
+		SET @outResult = 50201 --Proceso ya se corri� correctamente en el d�a
+		RETURN;
+	END
 
 	IF (@Hoy = 28 --Febrero en a�o no bisiesto
 		AND @Hoy = @ultimoDiaMes) 
@@ -210,13 +211,13 @@ BEGIN TRY
 		
 
 
-		WHILE @lo1<=@hi1
-			BEGIN
-			SELECT @idCC = cp.IdCC
-			FROM @CCPropiedad cp
-			WHERE cp.SEC = @lo1
+			WHILE @lo1<=@hi1
+				BEGIN
+				SELECT @idCC = cp.IdCC
+				FROM @CCPropiedad cp
+				WHERE cp.SEC = @lo1
 
-			EXEC dbo.Calcular_Monto @inIdCC = @idCC, @inIdPropiedad = @idPropiedad,@outMonto = @monto OUTPUT				
+				EXEC dbo.Calcular_Monto @inIdCC = @idCC, @inIdPropiedad = @idPropiedad,@outMonto = @monto OUTPUT				
 				
 				INSERT INTO dbo.FacturaLinea(IdFactura
 												, IdCC
@@ -234,10 +235,13 @@ BEGIN TRY
 			SET @lo1 = @lo1 + 1;
 			SET @montoTotal = @montoTotal + @monto;
 			END		
+			-- Actualizar montos originales y finales de la factura
 			UPDATE f
-			SET f.ToTPagarFinal = @montoTotal
+			SET f.ToTPagarOringinal = @montoTotal,   -- monto antes de intereses o descuentos
+				f.ToTPagarFinal     = @montoTotal    -- monto final (igual al original al crearse)
 			FROM dbo.Facturas f
-			WHERE f.Id = @ultimoIdFac
+			WHERE f.Id = @ultimoIdFac;
+
 		COMMIT
 		SET @lo = @lo + 1
 		END--del while
@@ -259,6 +263,7 @@ BEGIN CATCH
 			, 2 --Fall�
 			, 1
 			)
+	SET @outResult = -1;
 END CATCH
 END
 
@@ -333,3 +338,5 @@ BEGIN CATCH
 			)
 END CATCH
 END
+
+

@@ -935,6 +935,12 @@ BEGIN
                 , @inValor
             );
 
+			IF (@inIdTipoMovimiento = 1) -- solo si es lectura de consumo
+            BEGIN
+                UPDATE dbo.Propiedad
+                SET SaldoM3 = ISNULL(SaldoM3,0) + @inValor
+                WHERE Id = @IdPropiedad;
+            END
         COMMIT;
 
     END TRY

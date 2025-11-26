@@ -189,8 +189,9 @@ END
 					
 GO
 
-CREATE PROCEDURE dbo.SP_Asociar
+ALTER PROCEDURE dbo.SP_Asociar
 (
+	@FechaOperacion DATE,
 	@valorDocumento NVARCHAR(20),
 	@numeroFinca NVARCHAR(20),
 	@tipoAsociacion INT
@@ -201,7 +202,7 @@ BEGIN
 	DECLARE @CodigoResultado INT;
 	SET @CodigoResultado=1;
 	DECLARE @Inicio DATE;
-	SET @INICIO= GETDATE();
+	SET @INICIO= @FechaOperacion;
 	DECLARE @FIN DATE;
 	SET @FIN=NULL;
 	DECLARE @PrId int;
@@ -274,7 +275,6 @@ BEGIN
 	END CATCH
 END
 
-
 GO
 CREATE PROCEDURE dbo.sp_Login
 	  @inUsername NVARCHAR(64)
@@ -286,34 +286,34 @@ BEGIN TRY
 	DECLARE @outDescripcion NVARCHAR(128);
 	DECLARE @idUsuario INT;
 
-	IF NOT EXISTS( --Validar que el usuario existe (id error = 12)
-	SELECT 1 
-	FROM dbo.Usuario u
-	WHERE u.Nombre = @inUsername
-	)
-	BEGIN 
-		
-		SET @outDescripcion = 'Usuario no existe';		
-		SELECT @outDescripcion AS Descripcion;
-		RETURN -1;
-	END;
+	IF NOT EXISTS
+		( --Validar que el usuario existe (id error = 12)
+		SELECT 1 
+		FROM dbo.Usuario u
+		WHERE u.Nombre = @inUsername
+		)
+		BEGIN 		
+			SET @outDescripcion = 'Usuario no existe';		
+			SELECT @outDescripcion AS Descripcion;
+			RETURN -1;
+		END;
 
 	SELECT @idUsuario = u.id 
 	FROM dbo.Usuario u
 	WHERE u.Nombre = @inUsername;
 
-	IF NOT EXISTS ( --Validar que la contraseña correcta (id error = 13)
-	SELECT 1
-	FROM dbo.Usuario u
-	WHERE u.Nombre = @inUsername
-	AND u.Contraseña = @inPassword
-	)
-	BEGIN;
-
-		SET @outDescripcion = 'Contraseña incorrecta';
-		SELECT @outDescripcion AS Descripcion;
-		RETURN -1;
-	END;	
+	IF NOT EXISTS
+		( 
+		SELECT 1
+		FROM dbo.Usuario u
+		WHERE u.Nombre = @inUsername
+		AND u.Contraseña = @inPassword
+		)
+		BEGIN;
+			SET @outDescripcion = 'Contraseña incorrecta';
+			SELECT @outDescripcion AS Descripcion;
+			RETURN -1;
+		END;	
 	RETURN 0;
 END TRY
 
@@ -332,9 +332,12 @@ BEGIN
 	SET @outmsj = '';
 	BEGIN TRY
 	
-	IF NOT EXISTS (SELECT 1 --Validar que el propietario existe
+	IF NOT EXISTS 
+		(
+		SELECT 1 --Validar que el propietario existe
 		FROM dbo.Propietario p
-		WHERE p.valorDocumentoIdentidad = @inValorIdentidad)
+		WHERE p.valorDocumentoIdentidad = @inValorIdentidad
+		)
 		BEGIN;
 			SET @outmsj = 'No existe propietario con esa identificación';
 			RETURN -1;
@@ -345,12 +348,13 @@ BEGIN
 	FROM dbo.PropietarioPropiedad pp
 	INNER JOIN dbo.Propietario p ON p.id  = pp.Idpropiertario
 	INNER JOIN dbo.Propiedad pr  ON pr.id = pp.IdPropiedad	
-	WHERE (  p.valorDocumentoIdentidad = @inValorIdentidad
+	WHERE (  
+			p.valorDocumentoIdentidad = @inValorIdentidad
 		    AND    pp.IdTipoAsociacion = 1 --Asociado
 		  )
 	ORDER BY numPropiedad;
-	SET @outmsj = '';
-	RETURN 0;
+		SET @outmsj = '';
+		RETURN 0;
 
 	END TRY
 	BEGIN CATCH;
@@ -358,7 +362,6 @@ BEGIN
 		RETURN -1;
 	END CATCH;
 END;
-
 
 
 GO
@@ -372,12 +375,12 @@ BEGIN
 	
 	IF NOT EXISTS 
 		(
-		SELECT 1 --Validar que el propietario existe
+		SELECT 1 --Validar que la propiedad existe
 		FROM dbo.Propiedad p
 		WHERE p.NumeroFinca = @inNumPropiedad
 		)
 		BEGIN;
-			SET @outmsj = 'No existe propiedad con ese número';
+			SET @outmsj = 'No existe propiedad con ese n�mero';
 			RETURN -1;
 		END;
 	
@@ -386,12 +389,13 @@ BEGIN
 	FROM dbo.PropietarioPropiedad pp
 	INNER JOIN dbo.Propietario p ON p.id  = pp.Idpropiertario
 	INNER JOIN dbo.Propiedad pr  ON pr.id = pp.IdPropiedad	
-	WHERE (  pr.NumeroFinca= @inNumPropiedad
+	WHERE (  
+			pr.NumeroFinca= @inNumPropiedad
 		    AND pp.IdTipoAsociacion = 1
 		  )
 	ORDER BY numPropiedad;
-	SET @outmsj = '';
-	RETURN 0;
+		SET @outmsj = '';
+		RETURN 0;
 
 	END TRY
 	BEGIN CATCH;
@@ -401,9 +405,404 @@ BEGIN
 
 END;
 
-go
 
-ALTER PROCEDURE dbo.InsertarPXCC
+GO 
+CREATE PROCEDURE dbo.sp_Generar_Detalles --Genera los detalles de una factura
+	@inIdFactura INT
+	,  @outConcepto NVARCHAR(MAX) OUTPUT 
+AS 
+DECLARE   @lo INT = 1
+		, @hi INT = 0 
+		, @concepto NVARCHAR(200) = '';
+		
+BEGIN 
+	BEGIN TRY
+		SET @outConcepto = '';
+		DECLARE @CCFactura TABLE (
+									Sec  INT IDENTITY(1,1)
+									, Detalle NVARCHAR(MAX)
+									, Monto MONEY
+								 );
+		INSERT INTO @CCFactura (
+								 Detalle
+								 , Monto
+							    )
+		SELECT    fl.Detalle
+				, fl.Monto
+		FROM dbo.FacturaLinea fl
+		WHERE fl.IdFactura = @inIdFactura;
+
+		SELECT @hi = MAX(cf.Sec)
+		FROM @CCFactura cf;
+
+		WHILE (@lo <= @hi)
+			BEGIN
+
+				SELECT @concepto = cf.Detalle + ' ' + CAST(cf.Monto AS NVARCHAR(50))
+				FROM @CCFactura cf
+				WHERE  cf.Sec = @lo;
+
+				SET @outConcepto = @outConcepto + @concepto + CHAR(10); --Agregar concepto y salto de linea
+				SET @lo = @lo+1;
+			END; --end del while
+
+		RETURN 0
+	END TRY
+	BEGIN CATCH
+	 PRINT 'Error al ejecutar store procedure generar facturas'
+	PRINT ERROR_MESSAGE();
+	RETURN -1
+	END CATCH
+END
+
+
+
+GO
+CREATE PROCEDURE dbo.sp_Calcular_Intereses
+	@inIdFactura INT
+	, @outMonto MONEY OUTPUT
+	, @outDetalle NVARCHAR(128) OUTPUT
+AS	
+DECLARE @fechaLimite DATE
+BEGIN
+	BEGIN TRY
+		SELECT  @fechaLimite = f.FechaLimite
+		FROM dbo.Facturas f
+		WHERE f.Id = @inIdFactura
+		IF (
+				DATEDIFF(DAY ,@fechaLimite, GETDATE()) < 0
+			)
+		BEGIN
+			SET @outMonto = 0;
+			SET @outDetalle = ''
+			RETURN
+		END
+
+		SELECT @outMonto = ((f.ToTPagarOringinal * 0.04) / 30)*(DATEDIFF(DAY, @fechaLimite, GETDATE()))
+				, @outDetalle = 'InteresesMoratorios ' + CAST(@outMonto AS NVARCHAR(50))		
+		FROM dbo.Facturas f
+		WHERE f.Id = @inIdFactura;
+		
+		RETURN
+	END TRY
+	BEGIN CATCH
+	PRINT 'Error al ejecutar store procedure calcular intereses'
+	PRINT ERROR_MESSAGE();
+	RETURN -1
+	END CATCH
+END
+
+
+
+GO
+CREATE PROCEDURE dbo.sp_Factura_Pendiente_Propiedad
+	@inNumFinca NVARCHAR(20)
+AS  
+DECLARE @detalles NVARCHAR(MAX)
+		, @lo INT = 1
+		, @hi INT = 0 
+		, @idFactura INT
+		, @fechaLimite DATE
+		, @monto INT
+		, @detalle NVARCHAR(128)
+BEGIN 
+	BEGIN TRY
+		DECLARE @Factura TABLE (
+									SEC INT IDENTITY(1,1)
+									, idFactura INT
+									, fechaFactura DATE
+									, fechaVencimiento DATE
+									, TotalInicial MONEY
+									, TotalFinal MONEY
+									, Detalle NVARCHAR(MAX)
+							   )
+		INSERT INTO @Factura(
+								idFactura
+								, fechaFactura
+								, fechaVencimiento
+								, TotalInicial								
+							)
+		SELECT 
+				f.Id
+				, f.FechaFactura
+				, f.FechaLimite
+				, f.ToTPagarOringinal		   		
+		FROM dbo.Facturas f	
+		INNER JOIN Propiedad p ON p.id = f.IdPropiedad
+		WHERE ( 
+				p.NumeroFinca = @inNumFinca
+				AND f.Estatus = 1 --Pendiente
+			  )		
+		SELECT @hi = MAX(f.SEC)
+		FROM @Factura f
+
+		WHILE (@lo <= @hi)
+			BEGIN
+			SELECT @idFactura = f.idFactura  --Obtener el id de la factura iterada
+			FROM @Factura f
+			WHERE f.SEC = @lo
+
+			SELECT @fechaLimite = f.FechaLimite
+			FROM dbo.Facturas f
+			WHERE f.Id = @idFactura
+			
+			
+			EXEC  dbo.sp_Calcular_Intereses @inIdFactura = @idFactura, @outMonto = @monto OUTPUT, @outDetalle = @detalle OUTPUT
+			EXEC dbo.sp_Generar_Detalles @idFactura, @detalles OUTPUT;
+			
+			SET @detalles = @detalles + @detalle --a�ade el detalle de intereses
+			SELECT @monto = f.ToTPagarFinal + @monto --A�adir total + intereses
+			FROM Facturas f
+			WHERE f.Id = @idFactura
+
+			UPDATE @Factura --Actualiza la tabla variante, no la real
+			SET Detalle = @detalles,
+				TotalFinal = @monto
+			WHERE SEC = @lo;
+													
+			SET @lo = @lo+1;
+			SET @monto = 0
+			SET @detalle = ''
+			SET @detalles = ''
+		END; --end del while
+		
+		SELECT  fc.idFactura            AS idFactura
+				, fc.Detalle            AS ConceptoCobro
+				, fc.FechaFactura       AS fechaFacturacion
+				, fc.fechaVencimiento   AS FechaVence
+				, fc.TotalInicial       AS TotalOriginal
+				, fc.TotalFinal         AS TotalFinal
+		FROM @Factura fc
+		ORDER BY fc.FechaFactura ASC;
+		RETURN;
+
+	END TRY
+	BEGIN CATCH;
+		PRINT ERROR_MESSAGE();
+		RETURN -1;
+	END CATCH;
+
+END;
+
+GO
+CREATE PROCEDURE dbo.sp_Factura_A_Cobrar --Brinda los datos de la factura disponible a pagar
+	@inNumFinca NVARCHAR(20)
+AS  
+DECLARE @detalles NVARCHAR(MAX)
+		, @lo INT = 1
+		, @hi INT = 0 
+		, @idFactura INT
+		, @fechaLimite DATE
+		, @monto MONEY
+		, @detalle NVARCHAR(128)
+BEGIN 
+	BEGIN TRY
+		DECLARE @Factura TABLE (
+									SEC INT IDENTITY(1,1)
+									, idFactura INT
+									, fechaFactura DATE
+									, fechaVencimiento DATE
+									, TotalInicial MONEY
+									, TotalFinal MONEY
+									, Detalle NVARCHAR(MAX)
+							   )
+		INSERT INTO @Factura(
+								idFactura
+								, fechaFactura
+								, fechaVencimiento
+								, TotalInicial								
+							)
+		SELECT 
+				f.Id
+				, f.FechaFactura
+				, f.FechaLimite
+				, f.ToTPagarOringinal		   		
+		FROM dbo.Facturas f	
+		INNER JOIN Propiedad p ON p.id = f.IdPropiedad
+		WHERE ( 
+				p.NumeroFinca = @inNumFinca
+				AND (f.Estatus = 1) --Pendiente
+				AND ( 
+						f.FechaFactura = --Solo selecciona la factura m�s vieja
+								(
+							SELECT MIN(f2.FechaFactura)
+							FROM dbo.Facturas f2				
+							WHERE f2.Estatus = 1
+							AND f2.IdPropiedad = p.id
+			                   )
+					)
+			   );				  
+		SELECT @hi = MAX(f.SEC)
+		FROM @Factura f
+
+		WHILE (@lo <= @hi)
+			BEGIN
+			SELECT @idFactura = f.idFactura  --Obtener el id de la factura iterada
+			FROM @Factura f
+			WHERE f.SEC = @lo
+
+			SELECT @fechaLimite = f.FechaLimite
+			FROM dbo.Facturas f
+			WHERE f.Id = @idFactura
+			
+			
+			EXEC  dbo.sp_Calcular_Intereses @inIdFactura = @idFactura, @outMonto = @monto OUTPUT, @outDetalle = @detalle OUTPUT
+			EXEC dbo.sp_Generar_Detalles @idFactura, @detalles OUTPUT;
+			
+			SET @detalles = @detalles + @detalle
+			SELECT @monto = f.ToTPagarFinal + @monto
+			FROM Facturas f
+			WHERE f.Id = @idFactura
+
+			UPDATE @Factura 
+			SET Detalle = @detalles,
+				TotalFinal = @monto
+			WHERE SEC = @lo;
+													
+			SET @lo = @lo+1;
+			SET @monto = 0
+			SET @detalle = ''
+			SET @detalles = ''
+		END; --end del while
+
+		
+		SELECT  fc.idFactura            AS idFactura
+				, fc.Detalle            AS ConceptoCobro
+				, fc.FechaFactura       AS fechaFacturacion
+				, fc.fechaVencimiento   AS FechaVence
+				, fc.TotalInicial       AS TotalOriginal
+				, fc.TotalFinal         AS TotalFinal
+		FROM @Factura fc
+		ORDER BY fc.FechaFactura ASC;
+		RETURN;
+
+	END TRY
+	BEGIN CATCH;
+		PRINT ERROR_MESSAGE();
+		RETURN -1;
+	END CATCH;
+END;
+
+
+GO
+ALTER PROCEDURE dbo.sp_Pagar
+    @inIdFactura INT,
+    @inNumFinca NVARCHAR(20),
+    @FechaOperacion DATE   -- NUEVO
+AS
+DECLARE   @idPropiedad INT,
+          @numReferencia NVARCHAR(20),
+          @montoPago MONEY = 0,
+          @fechaLimite DATE,
+          @detalle NVARCHAR(200)
+BEGIN
+    BEGIN TRY	
+
+        SELECT @idPropiedad = p.id
+        FROM dbo.Propiedad p
+        WHERE p.NumeroFinca = @inNumFinca;
+
+        SELECT @fechaLimite = f.FechaLimite
+        FROM dbo.Facturas f
+        WHERE f.Id = @inIdFactura;
+
+        -- Número de referencia 
+        SET @numReferencia = 'RCPT-' 
+                             + FORMAT(@FechaOperacion, 'yyyyMM') + '-' 
+                             + @inNumFinca;
+
+        BEGIN TRANSACTION
+            -- Si está vencida según FechaOperacion
+            IF (DATEDIFF(DAY, @fechaLimite, @FechaOperacion) > 0)
+            BEGIN
+                EXEC dbo.sp_Calcular_Intereses 
+                        @inIdFactura = @inIdFactura,
+                        @outMonto = @montoPago OUTPUT,
+                        @outDetalle = @detalle OUTPUT;
+
+                INSERT INTO FacturaLinea
+                (
+                    IdFactura,
+                    IdCC,
+                    Detalle,
+                    Monto
+                )
+                VALUES
+                (
+                    @inIdFactura,
+                    7,
+                    'InteresesMoratorios',
+                    @montoPago
+                );
+            END
+
+            UPDATE f 
+            SET f.Estatus = 2,
+                f.ToTPagarFinal = f.ToTPagarOringinal + @montoPago
+            FROM dbo.Facturas f
+            WHERE f.Id = @inIdFactura;
+
+        COMMIT;
+
+        SELECT @montoPago = f.ToTPagarFinal
+        FROM dbo.Facturas f
+        WHERE f.Id = @inIdFactura;
+
+        IF EXISTS (
+            SELECT 1
+            FROM dbo.FacturaLinea fl
+            WHERE fl.IdFactura = @inIdFactura
+              AND fl.IdCC = 6
+        )
+        BEGIN
+            UPDATE c
+            SET c.Estado = 2
+            FROM dbo.CorteAgua c
+            WHERE c.FacturaId = @inIdFactura;
+        END
+
+        INSERT INTO dbo.Pagos
+        (
+            IdPropiedad,
+            IdTipoMedioPago,
+            NumeroReferencia
+        )
+        VALUES
+        (
+            @idPropiedad,
+            1,
+            @numReferencia
+        );
+
+        -- Insertar fecha simulada en comprobante
+        INSERT INTO dbo.Comprobante
+        (
+            Fecha,
+            Codigo
+        )
+        VALUES
+        (
+            @FechaOperacion,
+            @numReferencia
+        );
+
+        -- Devolver fecha simulada, no la real
+        SELECT @FechaOperacion AS Fecha,
+               @numReferencia AS Referencia,
+               @montoPago AS Monto;
+
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        THROW; 		
+    END CATCH
+END;
+
+go
+   
+
+CREATE PROCEDURE dbo.InsertarPXCC
 (
       @inNumeroFinca      NVARCHAR(20)
     , @inIdCC             INT
@@ -457,10 +856,12 @@ BEGIN
 END
 GO
 
-	GO
+
+
+GO
 CREATE PROCEDURE dbo.InsertarLectura
 (
-      @inNumeroFinca       NVARCHAR(20)
+     @inNumeroFinca       NVARCHAR(20)
     , @inIdTipoMovimiento  INT
     , @inValor             DECIMAL(18,2)
     , @outResultCode       INT OUTPUT
@@ -542,136 +943,4 @@ BEGIN
     END CATCH
 END;
 GO
---Datos de prueba
-INSERT INTO dbo.TipoUsuario(Id, Nombre)
-	VALUES (1, 'Admin')
-
-INSERT INTO dbo.Usuario( IdTipoUsuario, Nombre, Contraseña)
-	VALUES( 1, 'Administrador', 'SoyAdmin')
-
-INSERT INTO dbo.Propietario(Nombre, ValorDocumentoIdentidad, Email, Telefono)
-	VALUES('Valeria Solano', '10000001', 'p01@ejemplo.org', '8001-0001')
-
-INSERT INTO dbo.TipoLocalizacion(IdTipoLocalizacion, Nombre)
-	VALUES (1, 'Residencial')
-
-INSERT INTO dbo.TipoUso(IdTipoUso, Nombre)
-	VALUES(1, 'Habitación')
-
-INSERT INTO dbo.Propiedad(NumeroFinca, ValorFiscal, FechaRegistro, TipoUsoId, TipoLocalizacionId, NumeroMedidor, metrosCuadrados)
-	VALUES('F-0001', 21500000, '2025-06-02', 1, 1, 'M-1001',135)
-
-INSERT INTO dbo.TipoAsociacion(Id, Nombre)
-	VALUES(1, 'Asociar')
-
-INSERT INTO dbo.PropietarioPropiedad(Idpropiertario, IdPropiedad, IdTipoAsociacion, FechaInicio)
-	VALUES(1, 1, 1, '2025-06-02')
-
-INSERT INTO dbo.TipoMedioPago (Id, Nombre)
-  VALUES( 1, 'Efectivo')
-
----Necesario para insertar PXCC
-INSERT INTO dbo.TipoMovimientoLecturaMedidor (Id, Nombre)
-VALUES
-(1, 'Lectura'),
-(2, 'Ajuste Crédito'),
-(3, 'Ajuste Débito');
-
-INSERT INTO dbo.TipoUso (IdTipoUso, Nombre)
-VALUES
-
-(2, 'Comercial'),
-(3, 'Industrial'),
-(4, 'Lote Baldío'),
-(5, 'Agrícola');
-
-INSERT INTO dbo.TipoLocalizacion (IdTipoLocalizacion, Nombre)
-VALUES
-(2, 'Agrícola'),
-(3, 'Bosque'),
-(4, 'Industrial'),
-(5, 'Comercial');
-
-INSERT INTO dbo.TipoAsociacion (Id, Nombre)
-VALUES
-(2, 'Desasociar');
-
-INSERT INTO dbo.TipoMedioPago (Id, Nombre)
-VALUES
-(2, 'Tarjeta');
-
-INSERT INTO dbo.PeriodoMontoCC (Id, Nombre, QMeses, Dias)
-VALUES
-(1, 'Mensual', 1, NULL),
-(2, 'Trimestral', 3, NULL),
-(3, 'Semestral', 6, NULL),
-(4, 'Anual', 12, NULL),
-(5, 'Único', 1, NULL),
-(6, 'Interés Diario', 1, 30);  
-
-INSERT INTO dbo.TipoMontoCC (Id, Nombre)
-VALUES
-(1, 'Monto Fijo'),
-(2, 'Monto Variable'),
-(3, 'Porcentaje');
-
-INSERT INTO dbo.CC
-(
-      Id
-    , Nombre
-    , IdTipoMontoCC
-    , IdPeriodoMontoCC
-    , ValorMinimo
-    , ValorMinimoM3
-    , ValorFijoM3Adicional
-    , ValorPorcentual
-    , ValorFijo
-    , ValorM2Minimo
-    , ValorTramosM2
-)
-VALUES
-(1, 'ConsumoAgua', 
-    2, 1, 
-    500, 30, 100, 
-    NULL, NULL, NULL, NULL),
-
-(2, 'PatenteComercial', 
-    1, 3, 
-    NULL, NULL, NULL, 
-    NULL, 150000, NULL, NULL),
-
-(3, 'ImpuestoPropiedad', 
-    3, 4, 
-    NULL, NULL, NULL, 
-    0.01, NULL, NULL, NULL),
-
-(4, 'RecoleccionBasura', 
-    1, 1, 
-    150, NULL, NULL, 
-    NULL, 300, 400, 75),
-
-(5, 'MantenimientoParques', 
-    1, 1, 
-    NULL, NULL, NULL, 
-    NULL, 2000, NULL, NULL),
-
-(6, 'ReconexionAgua', 
-    1, 5, 
-    NULL, NULL, NULL, 
-    NULL, 30000, NULL, NULL),
-
-(7, 'InteresesMoratorios', 
-    3, 6, 
-    NULL, NULL, NULL, 
-    0.04, NULL, NULL, NULL);
-
-DECLARE @Codigo INT;
-
-EXEC dbo.InsertarPXCC
-      @inNumeroFinca = 'F-0001',
-      @inIdCC = 3,
-      @inIdTipoAsociacion = 1,
-      @outResultCode = @Codigo OUTPUT;
-
-SELECT @Codigo AS Resultado;
 

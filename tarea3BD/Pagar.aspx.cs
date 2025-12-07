@@ -63,12 +63,13 @@ namespace tarea3BD
                 string idFacturaPagar = idFactura[index];
                 var datos = Cache["numPropiedadSeleccionada"];
                 //SP
-                SqlCommand cmd = new SqlCommand("sp_Pagar", conexion);
+                SqlCommand cmd = new SqlCommand("sp_Pagar_Web", conexion);
                 cmd.CommandType = CommandType.StoredProcedure;
                 //Parametros de entrada SP
                 cmd.Parameters.AddWithValue("@inNumFinca", datos);
                 cmd.Parameters.AddWithValue("@inIdFactura", idFacturaPagar);
                 cmd.Parameters.AddWithValue("@FechaOperacion", DateTime.Today);
+                cmd.Parameters.AddWithValue("@inIdTipoMedioPago", 1);
                 SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {

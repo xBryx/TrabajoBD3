@@ -67,6 +67,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="FacturasPagadas.aspx" />
     <Content Include="FacturasPendientes.aspx" />
     <Content Include="Index.aspx" />
     <Content Include="Login.aspx" />
@@ -75,6 +76,13 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FacturasPagadas.aspx.cs">
+      <DependentUpon>FacturasPagadas.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="FacturasPagadas.aspx.designer.cs">
+      <DependentUpon>FacturasPagadas.aspx</DependentUpon>
+    </Compile>
     <Compile Include="FacturasPendientes.aspx.cs">
       <DependentUpon>FacturasPendientes.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

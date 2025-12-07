@@ -167,5 +167,10 @@ namespace tarea3BD
         {
             Response.Redirect("FacturasPendientes.aspx");
         }
+
+        protected void btnFacPagadas_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("FacturasPagadas.aspx");
+        }
     }
 }

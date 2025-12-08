@@ -7,6 +7,14 @@
       "RelativeMoniker": "D:0:0:{AB086B9F-FEF8-4BDF-BCED-F62551F00A70}|tarea3BD\\tarea3BD.csproj|solutionrelative:tarea3bd\\site1.master.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{AB086B9F-FEF8-4BDF-BCED-F62551F00A70}|tarea3BD\\tarea3BD.csproj|D:\\TEC\\6 Semestre\\BD I\\Proyecto3\\Web3BD\\tarea3BD\\TrabajoBD3\\tarea3bd\\index.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AB086B9F-FEF8-4BDF-BCED-F62551F00A70}|tarea3BD\\tarea3BD.csproj|solutionrelative:tarea3bd\\index.aspx.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AB086B9F-FEF8-4BDF-BCED-F62551F00A70}|tarea3BD\\tarea3BD.csproj|D:\\TEC\\6 Semestre\\BD I\\Proyecto3\\Web3BD\\tarea3BD\\TrabajoBD3\\tarea3bd\\index.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}",
+      "RelativeMoniker": "D:0:0:{AB086B9F-FEF8-4BDF-BCED-F62551F00A70}|tarea3BD\\tarea3BD.csproj|solutionrelative:tarea3bd\\index.aspx||{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{AB086B9F-FEF8-4BDF-BCED-F62551F00A70}|tarea3BD\\tarea3BD.csproj|D:\\TEC\\6 Semestre\\BD I\\Proyecto3\\Web3BD\\tarea3BD\\TrabajoBD3\\tarea3bd\\site1.master||{B30AFBFF-D992-43B7-B62D-2642580A2883}",
       "RelativeMoniker": "D:0:0:{AB086B9F-FEF8-4BDF-BCED-F62551F00A70}|tarea3BD\\tarea3BD.csproj|solutionrelative:tarea3bd\\site1.master||{B30AFBFF-D992-43B7-B62D-2642580A2883}"
     }
@@ -18,8 +26,34 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 2,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Index.aspx",
+              "DocumentMoniker": "D:\\TEC\\6 Semestre\\BD I\\Proyecto3\\Web3BD\\tarea3BD\\TrabajoBD3\\tarea3BD\\Index.aspx",
+              "RelativeDocumentMoniker": "tarea3BD\\Index.aspx",
+              "ToolTip": "D:\\TEC\\6 Semestre\\BD I\\Proyecto3\\Web3BD\\tarea3BD\\TrabajoBD3\\tarea3BD\\Index.aspx",
+              "RelativeToolTip": "tarea3BD\\Index.aspx",
+              "LogicalView": "7651a703-06e5-11d1-8ebd-00a0c90f26ea",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000195|",
+              "WhenOpened": "2025-12-07T05:29:19.042Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Index.aspx.cs",
+              "DocumentMoniker": "D:\\TEC\\6 Semestre\\BD I\\Proyecto3\\Web3BD\\tarea3BD\\TrabajoBD3\\tarea3BD\\Index.aspx.cs",
+              "RelativeDocumentMoniker": "tarea3BD\\Index.aspx.cs",
+              "ToolTip": "D:\\TEC\\6 Semestre\\BD I\\Proyecto3\\Web3BD\\tarea3BD\\TrabajoBD3\\tarea3BD\\Index.aspx.cs",
+              "RelativeToolTip": "tarea3BD\\Index.aspx.cs",
+              "ViewState": "AgIAAFYAAAAAAAAAAAAQwFsAAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-07T05:29:15.624Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
@@ -28,14 +62,14 @@
               "RelativeDocumentMoniker": "tarea3BD\\Site1.Master.cs",
               "ToolTip": "D:\\TEC\\6 Semestre\\BD I\\Proyecto3\\Web3BD\\tarea3BD\\TrabajoBD3\\tarea3BD\\Site1.Master.cs",
               "RelativeToolTip": "tarea3BD\\Site1.Master.cs",
-              "ViewState": "AgIAABcAAAAAAAAAAAAwwCEAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAABIAAAAAAAAAAAAowCEAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-26T18:10:23.157Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "Site1.Master",
               "DocumentMoniker": "D:\\TEC\\6 Semestre\\BD I\\Proyecto3\\Web3BD\\tarea3BD\\TrabajoBD3\\tarea3BD\\Site1.Master",
               "RelativeDocumentMoniker": "tarea3BD\\Site1.Master",

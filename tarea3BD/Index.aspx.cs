@@ -89,7 +89,7 @@ namespace tarea3BD
         //Enseña o esconde los elementos en la funcion segun el parametro de entrada
         public void cambioEstadoBtn(bool estado)
         {
-            btnFacPag.Enabled = estado;
+            btnFacPagadas.Enabled = estado;
             btnFacPen.Enabled = estado;
             btnPagFac.Enabled = estado;            
         }

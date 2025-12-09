@@ -1,217 +1,195 @@
-﻿USE Tarea3;
+USE Tarea3;
 GO
 
----se limpian las tablas temporales que se crean en el script de llenado 
-IF CURSOR_STATUS('global','cur_Dias') >= -1
-BEGIN
-    IF CURSOR_STATUS('global','cur_Dias') = 1 CLOSE cur_Dias;
-    DEALLOCATE cur_Dias;
-END;
-
-IF CURSOR_STATUS('global','cur_Lecturas') >= -1
-BEGIN
-    IF CURSOR_STATUS('global','cur_Lecturas') = 1 CLOSE cur_Lecturas;
-    DEALLOCATE cur_Lecturas;
-END;
-
-IF CURSOR_STATUS('global','cur_Pagos') >= -1
-BEGIN
-    IF CURSOR_STATUS('global','cur_Pagos') = 1 CLOSE cur_Pagos;
-    DEALLOCATE cur_Pagos;
-END;
-
-IF OBJECT_ID('tempdb..#Dias') IS NOT NULL
-    DROP TABLE #Dias;
-
---  se declaran las variables para la lectura del xml
+---se carga el xml
 DECLARE @RutaArchivoXML NVARCHAR(500) = N'C:\xmls\simulacionActu.xml';
-DECLARE @SQLCargaXML NVARCHAR(MAX);
-DECLARE @XMLDocumento XML;
+DECLARE @SQL NVARCHAR(MAX);
+DECLARE @XML XML;
 
-SET @SQLCargaXML = '
+SET @SQL = '
 SELECT @XML_OUT = TRY_CAST(BulkColumn AS XML)
 FROM OPENROWSET(BULK ''' + @RutaArchivoXML + ''', SINGLE_BLOB) AS X;
 ';
 
-EXEC sp_executesql ---sp temporal para lectura
-      @SQLCargaXML,
+EXEC sp_executesql
+      @SQL,
       N'@XML_OUT XML OUTPUT',
-      @XML_OUT = @XMLDocumento OUTPUT;
+      @XML_OUT = @XML OUTPUT;
 
-IF @XMLDocumento IS NULL  --- si ocurre error 
+IF @XML IS NULL
 BEGIN
-    PRINT 'ERROR: No se pudo cargar el XML.';
+    PRINT 'ERROR: No se pudo cargar el XML';
     RETURN;
 END;
 
-
-IF OBJECT_ID('tempdb..#Dias') IS NOT NULL
-    DROP TABLE #Dias;
-
-;WITH Dias AS ( ---se va por dias y se llena para lectura en el script
-    SELECT
-        X.value('@fecha','date') AS FechaOperacion,
-        X.query('*')             AS NodoDiaCompleto
-    FROM @XMLDocumento.nodes('/Operaciones/FechaOperacion') AS T(X)
-)
-SELECT * INTO #Dias FROM Dias;
-
-DECLARE @DiaFechaOperacion DATE;
-DECLARE @DiaNodoXML XML;
-
-DECLARE cur_Dias CURSOR FOR
-    SELECT FechaOperacion, NodoDiaCompleto
-    FROM #Dias
-    ORDER BY FechaOperacion;
-
-OPEN cur_Dias;
-FETCH NEXT FROM cur_Dias INTO @DiaFechaOperacion, @DiaNodoXML;
+PRINT 'XML cargado correctamente.';
 
 
-------inicio de las operaciones por dia
+-------------------------------------------------------------
+-- extración de fechas de operación
+-------------------------------------------------------------
+DECLARE @Fecha DATE, @Nodo XML;
+
+DECLARE curFechas CURSOR FOR
+SELECT  
+    X.value('@fecha','date') AS Fecha,
+    X.query('.')             AS NodoDia
+FROM @XML.nodes('/Operaciones/FechaOperacion') AS T(X);
+
+OPEN curFechas;
+FETCH NEXT FROM curFechas INTO @Fecha, @Nodo;
+
 WHILE @@FETCH_STATUS = 0
 BEGIN
-    PRINT '--------------------------------------------------------';
-    PRINT '--- INICIO operación del día ' + CONVERT(VARCHAR,@DiaFechaOperacion) + ' ---';
+    PRINT '------------------------------------------';
+    PRINT '--- Procesando día ' + CONVERT(VARCHAR,@Fecha);
+    PRINT '------------------------------------------';
 
-  
-    -- se insertan propietarios
-   INSERT INTO Propietario (ValorDocumentoIdentidad, Nombre, Email, Telefono)
-	SELECT
-		P.value('@valorDocumento','varchar(20)'),
-		P.value('@nombre','nvarchar(128)'),
-		P.value('@email','nvarchar(20)'),
-		P.value('@telefono','varchar(20)')
-	FROM @DiaNodoXML.nodes('./Personas/Persona') AS T(P);
+    ---------------------------------------------------
+    -- inserción de propietarios
+    ---------------------------------------------------
+    INSERT INTO Propietario (ValorDocumentoIdentidad, Nombre, Email, Telefono)
+    SELECT
+        P.value('@valorDocumento','varchar(20)'),
+        P.value('@nombre','nvarchar(128)'),
+        P.value('@email','nvarchar(20)'),
+        P.value('@telefono','varchar(20)')
+    FROM @Nodo.nodes('FechaOperacion/Personas/Persona') AS T(P);
 
+    ---------------------------------------------------
+    -- inserción de propiedades
+    ---------------------------------------------------
+    INSERT INTO Propiedad (NumeroFinca, NumeroMedidor, MetrosCuadrados,
+                           TipoUsoId, TipoLocalizacionId, ValorFiscal, FechaRegistro)
+    SELECT
+        P.value('@numeroFinca','varchar(20)'),
+        P.value('@numeroMedidor','varchar(20)'),
+        P.value('@metrosCuadrados','int'),
+        P.value('@tipoUsoId','int'),
+        P.value('@tipoZonaId','int'),
+        P.value('@valorFiscal','decimal(18,2)'),
+        P.value('@fechaRegistro','date')
+    FROM @Nodo.nodes('FechaOperacion/Propiedades/Propiedad') AS T(P);
 
-	--  se insertan las propiedades
-	INSERT INTO Propiedad (NumeroFinca, NumeroMedidor, MetrosCuadrados,
-						   TipoUsoId, TipoLocalizacionId, ValorFiscal, FechaRegistro)
-	SELECT
-		P.value('@numeroFinca','varchar(20)'),
-		P.value('@numeroMedidor','varchar(20)'),
-		P.value('@metrosCuadrados','int'),
-		P.value('@tipoUsoId','int'),
-		P.value('@tipoZonaId','int'),
-		P.value('@valorFiscal','decimal(18,2)'),
-		P.value('@fechaRegistro','date')
-	FROM @DiaNodoXML.nodes('./Propiedades/Propiedad') AS T(P);
+    ---------------------------------------------------
+    -- insercuón de relaciones PropietarioPropiedad
 
+    INSERT INTO PropietarioPropiedad (Idpropiertario, IdPropiedad, IdTipoAsociacion, FechaInicio)
+    SELECT
+        pr.Id,
+        p.Id,
+        M.value('@tipoAsociacionId','int'),
+        @Fecha
+    FROM @Nodo.nodes('FechaOperacion/PropiedadPersona/Movimiento') AS T(M)
+    INNER JOIN Propietario pr
+        ON pr.ValorDocumentoIdentidad = M.value('@valorDocumento','varchar(20)')
+    INNER JOIN Propiedad p
+        ON p.NumeroFinca = M.value('@numeroFinca','varchar(20)');
 
-	-- se insertan los pxp
-	INSERT INTO PropietarioPropiedad (idpropiertario, IdPropiedad, IdTipoAsociacion, FechaInicio)
-	SELECT
-		pr.Id,
-		p.Id,
-		M.value('@tipoAsociacionId','int'),
-		@DiaFechaOperacion
-	FROM @DiaNodoXML.nodes('./PropiedadPersona/Movimiento') AS T(M)
-	INNER JOIN Propietario pr ON pr.ValorDocumentoIdentidad = M.value('@valorDocumento','varchar(20)')
-	INNER JOIN Propiedad p ON p.NumeroFinca = M.value('@numeroFinca','varchar(20)');
+    ---------------------------------------------------
+    -- inserción de asociaciones PXCC
+    ---------------------------------------------------
+    INSERT INTO PXCC (IdPropiedad, IdCC, IdTipoAsociacion)
+    SELECT
+        p.Id,
+        M.value('@idCC','int'),
+        M.value('@tipoAsociacionId','int')
+    FROM @Nodo.nodes('FechaOperacion/CCPropiedad/Movimiento') AS T(M)
+    INNER JOIN Propiedad p
+        ON p.NumeroFinca = M.value('@numeroFinca','varchar(20)');
 
-	---se agregan los pxcc que ya vienen los demas van por trigger
-	INSERT INTO PXCC (IdPropiedad, IdCC, IdTipoAsociacion)
-	SELECT
-		p.Id,
-		M.value('@idCC','int'),
-		M.value('@tipoAsociacionId','int')
-	FROM @DiaNodoXML.nodes('./CCPropiedad/Movimiento') AS T(M)
-	INNER JOIN Propiedad p ON p.NumeroFinca = M.value('@numeroFinca','varchar(20)');
+    ---------------------------------------------------
+    -- procesado de lecturas
+    ---------------------------------------------------
+    DECLARE @Medidor VARCHAR(20),
+            @TipoMov INT,
+            @Valor DECIMAL(18,2),
+            @ResLect INT;
 
-	----se va haciendo lectura por el documento
-    DECLARE @LecturaMedidor VARCHAR(20),
-            @LecturaTipoMov INT,
-            @LecturaValor DECIMAL(18,2),
-            @LecturaResultado INT;
-
-    DECLARE cur_Lecturas CURSOR FOR
+    DECLARE curLect CURSOR FOR
         SELECT
             L.value('@numeroMedidor','varchar(20)'),
             L.value('@tipoMovimientoId','int'),
             L.value('@valor','decimal(18,2)')
-        FROM @DiaNodoXML.nodes('LecturasMedidor/Lectura') AS T(L);
+        FROM @Nodo.nodes('FechaOperacion/LecturasMedidor/Lectura') AS T(L);
 
-    OPEN cur_Lecturas;
-    FETCH NEXT FROM cur_Lecturas INTO @LecturaMedidor, @LecturaTipoMov, @LecturaValor;
+    OPEN curLect;
+    FETCH NEXT FROM curLect INTO @Medidor, @TipoMov, @Valor;
 
     WHILE @@FETCH_STATUS = 0
     BEGIN
-        EXEC dbo.InsertarLectura
-             @numeroMedidor      = @LecturaMedidor,
-             @inIdTipoMovimiento = @LecturaTipoMov,
-             @inValor            = @LecturaValor,
-             @outResultCode      = @LecturaResultado OUTPUT;
+        EXEC InsertarLectura
+            @numeroMedidor=@Medidor,
+            @inIdTipoMovimiento=@TipoMov,
+            @inValor=@Valor,
+            @outResultCode=@ResLect OUTPUT;
 
-        PRINT 'Lectura → Medidor:' + @LecturaMedidor 
-            + ' Tipo:' + CAST(@LecturaTipoMov AS VARCHAR)
-            + ' Valor:' + CAST(@LecturaValor AS VARCHAR)
-            + ' Resultado:' + CAST(@LecturaResultado AS VARCHAR);
+        PRINT 'Lectura → ' + @Medidor + ' Resultado=' + CAST(@ResLect AS VARCHAR);
 
-        FETCH NEXT FROM cur_Lecturas INTO @LecturaMedidor, @LecturaTipoMov, @LecturaValor;
+        FETCH NEXT FROM curLect INTO @Medidor, @TipoMov, @Valor;
     END
 
-    CLOSE cur_Lecturas;
-    DEALLOCATE cur_Lecturas;
+    CLOSE curLect;
+    DEALLOCATE curLect;
 
-    ----se recorre y se hace los pagos
-    DECLARE @PagoFinca NVARCHAR(20),
-            @PagoMedio INT,
-            @PagoReferencia VARCHAR(100);
+    ---------------------------------------------------
+    -- procesado de los pagos 
+    ---------------------------------------------------
+    DECLARE @Finca NVARCHAR(20), @Medio INT, @Ref VARCHAR(100);
 
-    DECLARE cur_Pagos CURSOR FOR
+    DECLARE curPag CURSOR FOR
         SELECT
             P.value('@numeroFinca','varchar(20)'),
             P.value('@tipoMedioPagoId','int'),
             P.value('@numeroReferencia','varchar(100)')
-        FROM @DiaNodoXML.nodes('Pagos/Pago') AS T(P);
+        FROM @Nodo.nodes('FechaOperacion/Pagos/Pago') AS T(P);
 
-    OPEN cur_Pagos;
-    FETCH NEXT FROM cur_Pagos INTO @PagoFinca, @PagoMedio, @PagoReferencia;
+    OPEN curPag;
+    FETCH NEXT FROM curPag INTO @Finca, @Medio, @Ref;
 
     WHILE @@FETCH_STATUS = 0
     BEGIN
-        PRINT 'Pago → Finca:' + @PagoFinca 
-              + ' Medio:' + CAST(@PagoMedio AS VARCHAR)
-              + ' Ref:' + @PagoReferencia;
+        EXEC sp_Pagar
+            @inNumFinca=@Finca,
+            @inIdTipoMedioPago=@Medio,
+            @FechaOperacion=@Fecha;
 
-        EXEC dbo.sp_Pagar
-             @inNumFinca        = @PagoFinca,
-             @inIdTipoMedioPago = @PagoMedio,
-             @FechaOperacion    = @DiaFechaOperacion;
-
-        FETCH NEXT FROM cur_Pagos INTO @PagoFinca, @PagoMedio, @PagoReferencia;
+        FETCH NEXT FROM curPag INTO @Finca, @Medio, @Ref;
     END
 
-    CLOSE cur_Pagos;
-    DEALLOCATE cur_Pagos;
+    CLOSE curPag;
+    DEALLOCATE curPag;
 
-   ----se hace facturaciones
-    DECLARE @ResultadoFact INT;
+    ---------------------------------------------------
+    --generado de facturas
+    ---------------------------------------------------
+    DECLARE @ResFact INT;
 
-    EXEC dbo.sp_Facturar
-         @FechaOperacion = @DiaFechaOperacion,
-         @outResult      = @ResultadoFact OUTPUT;
+    EXEC sp_Facturar
+         @FechaOperacion=@Fecha,
+         @outResult=@ResFact OUTPUT;
 
-    PRINT 'Facturación resultado: ' + CAST(@ResultadoFact AS VARCHAR);
+    PRINT 'Facturación → ' + CAST(@ResFact AS VARCHAR);
 
-   --se hacen cortes de agua
-    DECLARE @ResultadoCorte INT;
+    ---------------------------------------------------
+    -- generado de cortes de agua
+    ---------------------------------------------------
+    DECLARE @ResCorte INT;
 
-    EXEC dbo.sp_Facturar_Corte_Agua
-         @FechaOperacion = @DiaFechaOperacion,
-         @outResult      = @ResultadoCorte OUTPUT;
+    EXEC sp_Facturar_Corte_Agua
+         @FechaOperacion=@Fecha,
+         @outResult=@ResCorte OUTPUT;
 
-    PRINT 'Corte Agua resultado: ' + CAST(@ResultadoCorte AS VARCHAR);
+    PRINT 'CorteAgua → ' + CAST(@ResCorte AS VARCHAR);
 
+    ---------------------------------------------------
+    PRINT '--- FIN del día ' + CONVERT(VARCHAR,@Fecha);
+    ---------------------------------------------------
 
-    PRINT '--- FIN operación del día ' + CONVERT(VARCHAR,@DiaFechaOperacion) + ' ---';
-
-    FETCH NEXT FROM cur_Dias INTO @DiaFechaOperacion, @DiaNodoXML;
+    FETCH NEXT FROM curFechas INTO @Fecha, @Nodo;
 END
 
-CLOSE cur_Dias;
-DEALLOCATE cur_Dias;
+CLOSE curFechas;
+DEALLOCATE curFechas;
 
-DROP TABLE #Dias;
-GO
+
